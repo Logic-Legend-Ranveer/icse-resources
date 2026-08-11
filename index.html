@@ -178,7 +178,7 @@ async function loadFolder(path, containerElement) {
 // Initial load: Pass "" to fetch whatever folders/files live at the root of the repo
 const filesDiv = document.getElementById("files");
 filesDiv.innerHTML = `<div class="loading">Loading files...</div>`;
-loadFolder("", filesDiv);
+loadFolder("files", filesDiv);
 </script>
 </body>
 </html>
