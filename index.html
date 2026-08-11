@@ -1,101 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Files</title>
+  <meta charset="UTF-8">
+  <title>My Files Explorer</title>
 
   <style>
-    body{
-      background:#111;
-      color:white;
-      font-family:Arial;
-      padding:30px;
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      padding: 30px;
     }
 
-    h1{
-      color:#00ffcc;
+    h1 {
+      color: #00ffcc;
+      margin-bottom: 20px;
     }
 
-    .file{
-      background:#1e1e1e;
-      padding:12px;
-      margin:10px 0;
-      border-radius:10px;
+    /* Folder Header Style */
+    .folder-header {
+      background: #252526;
+      color: #ffd700;
+      padding: 10px 14px;
+      margin: 6px 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
     }
 
-    a{
-      color:#66ccff;
-      text-decoration:none;
-      font-size:18px;
+    .folder-header:hover {
+      background: #333333;
     }
 
-    a:hover{
-      color:white;
+    /* Container for nested folder contents */
+    .folder-content {
+      margin-left: 20px;
+      border-left: 2px solid #333;
+      padding-left: 10px;
+      display: none; /* Hidden by default until clicked */
+    }
+
+    .folder-content.open {
+      display: block;
+    }
+
+    /* File Item Style */
+    .file {
+      background: #1e1e1e;
+      padding: 10px 14px;
+      margin: 4px 0;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    a {
+      color: #66ccff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .loading {
+      color: #aaa;
+      font-style: italic;
+      padding: 6px 14px;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Downloads</h1>
+<h1>📂 Downloads Explorer</h1>
 
 <div id="files"></div>
 
 <script>
-
 const username = "Logic-Legend-Ranveer";
 const repo = "public-files";
 
-async function loadFolder(folder, parentElement) {
+async function loadFolder(path, containerElement) {
+  const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
 
-    const url =
-    `https://api.github.com/repos/${username}/${repo}/contents/${folder}`;
-
+  try {
     const response = await fetch(url);
     const data = await response.json();
 
-    for (const item of data) {
+    // Clear "Loading..." text
+    containerElement.innerHTML = "";
 
-        if (item.type === "dir") {
-
-            // Create folder heading
-            const folderTitle = document.createElement("h2");
-            folderTitle.textContent = item.name;
-
-            parentElement.appendChild(folderTitle);
-
-            // Container for folder contents
-            const folderDiv = document.createElement("div");
-            folderDiv.style.marginLeft = "20px";
-
-            parentElement.appendChild(folderDiv);
-
-            // Recursively load subfolder
-            await loadFolder(item.path, folderDiv);
-
-        }
-
-        else if (item.type === "file") {
-
-            const div = document.createElement("div");
-            div.className = "file";
-
-            const link = document.createElement("a");
-
-            link.href = item.download_url;
-            link.textContent = item.name;
-            link.target = "_blank";
-
-            div.appendChild(link);
-
-            parentElement.appendChild(div);
-        }
+    if (!Array.isArray(data)) {
+      containerElement.innerHTML = `<div class="loading">No files found.</div>`;
+      return;
     }
+
+    for (const item of data) {
+      if (item.type === "dir") {
+        // Create Folder Item
+        const folderHeader = document.createElement("div");
+        folderHeader.className = "folder-header";
+        folderHeader.innerHTML = `▶ 📁 <span>${item.name}</span>`;
+
+        // Container for sub-items
+        const folderContent = document.createElement("div");
+        folderContent.className = "folder-content";
+
+        // Track whether contents have been loaded yet
+        let isLoaded = false;
+
+        folderHeader.addEventListener("click", async () => {
+          const isOpen = folderContent.classList.toggle("open");
+
+          // Update arrow icon
+          folderHeader.innerHTML = `${isOpen ? "▼" : "▶"} 📁 <span>${item.name}</span>`;
+
+          // Only fetch contents the first time the folder is opened
+          if (isOpen && !isLoaded) {
+            folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
+            await loadFolder(item.path, folderContent);
+            isLoaded = true;
+          }
+        });
+
+        containerElement.appendChild(folderHeader);
+        containerElement.appendChild(folderContent);
+
+      } else if (item.type === "file") {
+        // Create File Item
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "file";
+
+        const link = document.createElement("a");
+        link.href = item.download_url;
+        link.textContent = item.name;
+        link.target = "_blank";
+
+        fileDiv.innerHTML = `📄 `;
+        fileDiv.appendChild(link);
+
+        containerElement.appendChild(fileDiv);
+      }
+    }
+  } catch (error) {
+    containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to load folder.</div>`;
+  }
 }
 
+// Initial load for the root 'files' directory
 const filesDiv = document.getElementById("files");
-
+filesDiv.innerHTML = `<div class="loading">Loading files...</div>`;
 loadFolder("files", filesDiv);
-
 </script>
 
 </body>
