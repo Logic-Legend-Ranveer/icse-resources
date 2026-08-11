@@ -89,42 +89,61 @@
 const username = "Logic-Legend-Ranveer";
 const repo = "public-files";
 
+// Leave 'path' empty ("") to load the root directory of the repo automatically
 async function loadFolder(path, containerElement) {
   const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
 
   try {
     const response = await fetch(url);
+
+    // 1. Explicitly check for Rate Limiting (403)
+    if (response.status === 403) {
+      containerElement.innerHTML = `
+        <div class="loading" style="color: #ffcc00; font-weight: bold;">
+          ⚠️ GitHub API rate limit reached (60 requests/hr). <br>
+          Please wait a few minutes before refreshing again.
+        </div>`;
+      return;
+    }
+
+    // 2. Check for missing folder/path (404)
+    if (response.status === 404) {
+      containerElement.innerHTML = `
+        <div class="loading" style="color: #ff6b6b;">
+          ❌ Folder path "${path}" was not found. Check folder names.
+        </div>`;
+      return;
+    }
+
     const data = await response.json();
 
-    // Clear "Loading..." text
-    containerElement.innerHTML = "";
+    containerElement.innerHTML = ""; // Clear loading text
 
-    if (!Array.isArray(data)) {
-      containerElement.innerHTML = `<div class="loading">No files found.</div>`;
+    if (!Array.isArray(data) || data.length === 0) {
+      containerElement.innerHTML = `<div class="loading">No files found in this folder.</div>`;
       return;
     }
 
     for (const item of data) {
+      // Hide index.html itself from showing up in the explorer list
+      if (item.name.toLowerCase() === "index.html") continue;
+
       if (item.type === "dir") {
-        // Create Folder Item
+        // Create Folder Header
         const folderHeader = document.createElement("div");
         folderHeader.className = "folder-header";
         folderHeader.innerHTML = `▶ 📁 <span>${item.name}</span>`;
 
-        // Container for sub-items
+        // Create Container for Sub-items
         const folderContent = document.createElement("div");
         folderContent.className = "folder-content";
 
-        // Track whether contents have been loaded yet
         let isLoaded = false;
 
         folderHeader.addEventListener("click", async () => {
           const isOpen = folderContent.classList.toggle("open");
-
-          // Update arrow icon
           folderHeader.innerHTML = `${isOpen ? "▼" : "▶"} 📁 <span>${item.name}</span>`;
 
-          // Only fetch contents the first time the folder is opened
           if (isOpen && !isLoaded) {
             folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
             await loadFolder(item.path, folderContent);
@@ -136,7 +155,7 @@ async function loadFolder(path, containerElement) {
         containerElement.appendChild(folderContent);
 
       } else if (item.type === "file") {
-        // Create File Item
+        // Create File Link
         const fileDiv = document.createElement("div");
         fileDiv.className = "file";
 
@@ -152,15 +171,14 @@ async function loadFolder(path, containerElement) {
       }
     }
   } catch (error) {
-    containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to load folder.</div>`;
+    containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to fetch contents.</div>`;
   }
 }
 
-// Initial load for the root 'files' directory
+// Initial load: Pass "" to fetch whatever folders/files live at the root of the repo
 const filesDiv = document.getElementById("files");
 filesDiv.innerHTML = `<div class="loading">Loading files...</div>`;
-loadFolder("files", filesDiv);
+loadFolder("", filesDiv);
 </script>
-
 </body>
 </html>
