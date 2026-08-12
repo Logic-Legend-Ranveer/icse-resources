@@ -102,6 +102,58 @@
       cursor: wait;
       opacity: 0.75;
     }
+
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      background: rgba(0, 0, 0, 0.92);
+    }
+
+    .preview-modal.open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-toolbar {
+      background: #1e1e1e;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+    }
+
+    .preview-title {
+      color: #fff;
+      font-weight: 700;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-action {
+      background: #252526;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font: inherit;
+      padding: 8px 12px;
+    }
+
+    .preview-action:hover {
+      background: #333;
+    }
+
+    .preview-frame {
+      width: 100%;
+      flex: 1;
+      border: 0;
+      background: #111;
+    }
   </style>
 </head>
 
@@ -109,6 +161,14 @@
 <h1>Downloads</h1>
 
 <div id="files"></div>
+<div id="previewModal" class="preview-modal">
+  <div class="preview-toolbar">
+    <div id="previewTitle" class="preview-title">PDF Preview</div>
+    <a id="previewDownload" class="preview-action" href="#" download>Download</a>
+    <button id="previewClose" class="preview-action" type="button">Close</button>
+  </div>
+  <iframe id="previewFrame" class="preview-frame" title="PDF preview"></iframe>
+</div>
 <script data-goatcounter="https://icse-resources-analytics.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -201,9 +261,12 @@ async function loadFolder(path, containerElement) {
         fileDiv.className = "file";
 
         const link = document.createElement("a");
-        link.href = item.html_url;
+        link.href = item.download_url;
         link.textContent = item.name;
-        link.target = "_blank";
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          openPdfPreview(item);
+        });
 
         fileDiv.innerHTML = `File `;
         fileDiv.appendChild(link);
@@ -214,6 +277,27 @@ async function loadFolder(path, containerElement) {
   } catch (error) {
     containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to fetch contents.</div>`;
   }
+}
+
+function openPdfPreview(file) {
+  const modal = document.getElementById("previewModal");
+  const title = document.getElementById("previewTitle");
+  const frame = document.getElementById("previewFrame");
+  const download = document.getElementById("previewDownload");
+
+  title.textContent = file.name;
+  frame.src = file.download_url;
+  download.href = file.download_url;
+  download.download = file.name;
+  modal.classList.add("open");
+}
+
+function closePdfPreview() {
+  const modal = document.getElementById("previewModal");
+  const frame = document.getElementById("previewFrame");
+
+  modal.classList.remove("open");
+  frame.src = "";
 }
 
 function safeZipName(name) {
@@ -302,6 +386,10 @@ async function downloadPdfsAsZip(folderPath, pdfFiles, button) {
 }
 
 const filesDiv = document.getElementById("files");
+document.getElementById("previewClose").addEventListener("click", closePdfPreview);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closePdfPreview();
+});
 filesDiv.innerHTML = `<div class="loading">Loading files...</div>`;
 loadFolder("files", filesDiv);
 </script>
