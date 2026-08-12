@@ -201,7 +201,7 @@ async function loadFolder(path, containerElement) {
         fileDiv.className = "file";
 
         const link = document.createElement("a");
-        link.href = item.download_url;
+        link.href = item.html_url;
         link.textContent = item.name;
         link.target = "_blank";
 
