@@ -17,7 +17,6 @@
       margin-bottom: 20px;
     }
 
-    /* Folder Header Style */
     .folder-header {
       background: #252526;
       color: #ffd700;
@@ -37,19 +36,17 @@
       background: #333333;
     }
 
-    /* Container for nested folder contents */
     .folder-content {
       margin-left: 20px;
       border-left: 2px solid #333;
       padding-left: 10px;
-      display: none; /* Hidden by default until clicked */
+      display: none;
     }
 
     .folder-content.open {
       display: block;
     }
 
-    /* File Item Style */
     .file {
       background: #1e1e1e;
       padding: 10px 14px;
@@ -76,65 +73,111 @@
       font-style: italic;
       padding: 6px 14px;
     }
+
+    .download-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 6px 0 10px;
+    }
+
+    .download-all {
+      background: #12352f;
+      border: 1px solid #00b894;
+      color: #d7fff6;
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      flex: 1 1 260px;
+    }
+
+    .download-all:hover {
+      background: #165146;
+    }
+
+    .download-all:disabled {
+      cursor: wait;
+      opacity: 0.75;
+    }
   </style>
 </head>
 
 <body>
-<h1>📂 Downloads</h1>
+<h1>Downloads</h1>
 
 <div id="files"></div>
 <script data-goatcounter="https://icse-resources-analytics.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 const username = "Logic-Legend-Ranveer";
 const repo = "public-files";
 
-// Leave 'path' empty ("") to load the root directory of the repo automatically
 async function loadFolder(path, containerElement) {
   const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
 
   try {
     const response = await fetch(url);
 
-    // 1. Explicitly check for Rate Limiting (403)
     if (response.status === 403) {
       containerElement.innerHTML = `
         <div class="loading" style="color: #ffcc00; font-weight: bold;">
-          ⚠️ GitHub API rate limit reached (60 requests/hr). <br>
+          GitHub API rate limit reached (60 requests/hr). <br>
           Please wait a few minutes before refreshing again.
         </div>`;
       return;
     }
 
-    // 2. Check for missing folder/path (404)
     if (response.status === 404) {
       containerElement.innerHTML = `
         <div class="loading" style="color: #ff6b6b;">
-          ❌ Folder path "${path}" was not found. Check folder names.
+          Folder path "${path}" was not found. Check folder names.
         </div>`;
       return;
     }
 
     const data = await response.json();
-
-    containerElement.innerHTML = ""; // Clear loading text
+    containerElement.innerHTML = "";
 
     if (!Array.isArray(data) || data.length === 0) {
       containerElement.innerHTML = `<div class="loading">No files found in this folder.</div>`;
       return;
     }
 
-    for (const item of data) {
-      // Hide index.html itself from showing up in the explorer list
-      if (item.name.toLowerCase() === "index.html") continue;
+    const visibleItems = data.filter(item => item.name.toLowerCase() !== "index.html");
+    const pdfFiles = visibleItems.filter(item => item.type === "file" && item.name.toLowerCase().endsWith(".pdf"));
+    const hasSubfolders = visibleItems.some(item => item.type === "dir");
 
+    if (pdfFiles.length > 0 && !hasSubfolders) {
+      const downloadActions = document.createElement("div");
+      downloadActions.className = "download-actions";
+
+      const individualButton = document.createElement("button");
+      individualButton.className = "download-all";
+      individualButton.type = "button";
+      individualButton.textContent = `Download all PDFs individually (${pdfFiles.length})`;
+      individualButton.addEventListener("click", () => downloadPdfsIndividually(pdfFiles, individualButton));
+
+      const zipButton = document.createElement("button");
+      zipButton.className = "download-all";
+      zipButton.type = "button";
+      zipButton.textContent = `Download all PDFs as .zip (${pdfFiles.length})`;
+      zipButton.addEventListener("click", () => downloadPdfsAsZip(path, pdfFiles, zipButton));
+
+      downloadActions.appendChild(individualButton);
+      downloadActions.appendChild(zipButton);
+      containerElement.appendChild(downloadActions);
+    }
+
+    for (const item of visibleItems) {
       if (item.type === "dir") {
-        // Create Folder Header
         const folderHeader = document.createElement("div");
         folderHeader.className = "folder-header";
-        folderHeader.innerHTML = `▶ 📁 <span>${item.name}</span>`;
+        folderHeader.innerHTML = `> Folder <span>${item.name}</span>`;
 
-        // Create Container for Sub-items
         const folderContent = document.createElement("div");
         folderContent.className = "folder-content";
 
@@ -142,7 +185,7 @@ async function loadFolder(path, containerElement) {
 
         folderHeader.addEventListener("click", async () => {
           const isOpen = folderContent.classList.toggle("open");
-          folderHeader.innerHTML = `${isOpen ? "▼" : "▶"} 📁 <span>${item.name}</span>`;
+          folderHeader.innerHTML = `${isOpen ? "v" : ">"} Folder <span>${item.name}</span>`;
 
           if (isOpen && !isLoaded) {
             folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
@@ -153,9 +196,7 @@ async function loadFolder(path, containerElement) {
 
         containerElement.appendChild(folderHeader);
         containerElement.appendChild(folderContent);
-
       } else if (item.type === "file") {
-        // Create File Link
         const fileDiv = document.createElement("div");
         fileDiv.className = "file";
 
@@ -164,7 +205,7 @@ async function loadFolder(path, containerElement) {
         link.textContent = item.name;
         link.target = "_blank";
 
-        fileDiv.innerHTML = `📄 `;
+        fileDiv.innerHTML = `File `;
         fileDiv.appendChild(link);
 
         containerElement.appendChild(fileDiv);
@@ -175,7 +216,80 @@ async function loadFolder(path, containerElement) {
   }
 }
 
-// Initial load: Pass "" to fetch whatever folders/files live at the root of the repo
+function safeZipName(name) {
+  return name.replace(/[\\/:*?"<>|]+/g, "-").trim() || "PDFs";
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function downloadPdfsIndividually(pdfFiles, button) {
+  const originalText = button.textContent;
+  button.disabled = true;
+
+  try {
+    for (let index = 0; index < pdfFiles.length; index++) {
+      const file = pdfFiles[index];
+      button.textContent = `Starting ${index + 1}/${pdfFiles.length}: ${file.name}`;
+
+      const link = document.createElement("a");
+      link.href = file.download_url;
+      link.download = file.name;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      await wait(500);
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
+async function downloadPdfsAsZip(folderPath, pdfFiles, button) {
+  if (!window.JSZip) {
+    alert("The zip download tool is still loading. Please try again in a moment.");
+    return;
+  }
+
+  const originalText = button.textContent;
+  button.disabled = true;
+  const zip = new JSZip();
+
+  try {
+    for (let index = 0; index < pdfFiles.length; index++) {
+      const file = pdfFiles[index];
+      button.textContent = `Adding ${index + 1}/${pdfFiles.length}: ${file.name}`;
+
+      const response = await fetch(file.download_url);
+      if (!response.ok) {
+        throw new Error(`Could not download ${file.name}`);
+      }
+
+      zip.file(file.name, await response.blob());
+    }
+
+    button.textContent = "Preparing zip...";
+    const blob = await zip.generateAsync({ type: "blob" });
+    const folderName = safeZipName(folderPath.split("/").filter(Boolean).pop() || "PDFs");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${folderName}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+  } catch (error) {
+    alert("Could not create the zip. Please try again, or use the individual download option.");
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+}
+
 const filesDiv = document.getElementById("files");
 filesDiv.innerHTML = `<div class="loading">Loading files...</div>`;
 loadFolder("files", filesDiv);
