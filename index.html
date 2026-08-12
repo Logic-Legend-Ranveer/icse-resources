@@ -68,6 +68,22 @@
       text-decoration: underline;
     }
 
+    .file-preview-button {
+      background: none;
+      border: 0;
+      color: #66ccff;
+      cursor: pointer;
+      font: inherit;
+      font-size: 16px;
+      padding: 0;
+      text-align: left;
+    }
+
+    .file-preview-button:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
     .loading {
       color: #aaa;
       font-style: italic;
@@ -275,16 +291,14 @@ async function loadFolder(path, containerElement) {
         const fileDiv = document.createElement("div");
         fileDiv.className = "file";
 
-        const link = document.createElement("a");
-        link.href = item.download_url;
-        link.textContent = item.name;
-        link.addEventListener("click", (event) => {
-          event.preventDefault();
-          openPdfPreview(item);
-        });
+        const previewButton = document.createElement("button");
+        previewButton.className = "file-preview-button";
+        previewButton.type = "button";
+        previewButton.textContent = item.name;
+        previewButton.addEventListener("click", () => openPdfPreview(item));
 
         fileDiv.innerHTML = `File `;
-        fileDiv.appendChild(link);
+        fileDiv.appendChild(previewButton);
 
         containerElement.appendChild(fileDiv);
       }
@@ -294,6 +308,24 @@ async function loadFolder(path, containerElement) {
   }
 }
 
+async function fetchPdfData(file) {
+  const apiResponse = await fetch(file.url, {
+    headers: {
+      Accept: "application/vnd.github.v3.raw"
+    }
+  });
+
+  if (apiResponse.ok) {
+    return await apiResponse.arrayBuffer();
+  }
+
+  const rawResponse = await fetch(file.download_url);
+  if (!rawResponse.ok) {
+    throw new Error("Could not fetch the PDF preview.");
+  }
+
+  return await rawResponse.arrayBuffer();
+}
 async function openPdfPreview(file) {
   const modal = document.getElementById("previewModal");
   const title = document.getElementById("previewTitle");
@@ -312,12 +344,7 @@ async function openPdfPreview(file) {
       throw new Error("PDF preview tool did not load.");
     }
 
-    const response = await fetch(file.download_url);
-    if (!response.ok) {
-      throw new Error("Could not fetch the PDF preview.");
-    }
-
-    const pdfData = await response.arrayBuffer();
+    const pdfData = await fetchPdfData(file);
     const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
 
     if (session !== previewSession) return;
@@ -454,4 +481,5 @@ loadFolder("files", filesDiv);
 </script>
 </body>
 </html>
+
 
