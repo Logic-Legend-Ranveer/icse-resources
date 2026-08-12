@@ -158,8 +158,8 @@ async function loadFolder(path, containerElement) {
       const individualButton = document.createElement("button");
       individualButton.className = "download-all";
       individualButton.type = "button";
-      individualButton.textContent = `Download all PDFs individually (${pdfFiles.length})`;
-      individualButton.addEventListener("click", () => downloadPdfsIndividually(pdfFiles, individualButton));
+      individualButton.textContent = `Save all PDFs individually to a folder (${pdfFiles.length})`;
+      individualButton.addEventListener("click", () => savePdfsIndividuallyToFolder(pdfFiles, individualButton));
 
       const zipButton = document.createElement("button");
       zipButton.className = "download-all";
@@ -204,7 +204,6 @@ async function loadFolder(path, containerElement) {
         link.href = item.download_url;
         link.textContent = item.name;
         link.target = "_blank";
-        link.download = item.name;
 
         fileDiv.innerHTML = `File `;
         fileDiv.appendChild(link);
@@ -225,35 +224,36 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function downloadPdfsIndividually(pdfFiles, button) {
+async function savePdfsIndividuallyToFolder(pdfFiles, button) {
+  if (!window.showDirectoryPicker) {
+    alert("Your browser does not support saving many files directly to a folder. Please use the .zip option instead.");
+    return;
+  }
+
   const originalText = button.textContent;
   button.disabled = true;
 
   try {
+    const folderHandle = await window.showDirectoryPicker();
+
     for (let index = 0; index < pdfFiles.length; index++) {
       const file = pdfFiles[index];
-      button.textContent = `Downloading ${index + 1}/${pdfFiles.length}: ${file.name}`;
+      button.textContent = `Saving ${index + 1}/${pdfFiles.length}: ${file.name}`;
 
       const response = await fetch(file.download_url);
       if (!response.ok) {
         throw new Error(`Could not download ${file.name}`);
       }
 
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = file.name;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      await wait(1000);
-      URL.revokeObjectURL(objectUrl);
+      const fileHandle = await folderHandle.getFileHandle(file.name, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(await response.blob());
+      await writable.close();
     }
   } catch (error) {
-    alert("Could not download all PDFs individually. Your browser may be blocking multiple downloads. Please allow multiple downloads for this site, or use the .zip option.");
+    if (error.name !== "AbortError") {
+      alert("Could not save all PDFs individually. Please try again, or use the .zip option.");
+    }
   } finally {
     button.disabled = false;
     button.textContent = originalText;
