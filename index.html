@@ -204,6 +204,7 @@ async function loadFolder(path, containerElement) {
         link.href = item.download_url;
         link.textContent = item.name;
         link.target = "_blank";
+        link.download = item.name;
 
         fileDiv.innerHTML = `File `;
         fileDiv.appendChild(link);
@@ -231,18 +232,28 @@ async function downloadPdfsIndividually(pdfFiles, button) {
   try {
     for (let index = 0; index < pdfFiles.length; index++) {
       const file = pdfFiles[index];
-      button.textContent = `Starting ${index + 1}/${pdfFiles.length}: ${file.name}`;
+      button.textContent = `Downloading ${index + 1}/${pdfFiles.length}: ${file.name}`;
+
+      const response = await fetch(file.download_url);
+      if (!response.ok) {
+        throw new Error(`Could not download ${file.name}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
 
       const link = document.createElement("a");
-      link.href = file.download_url;
+      link.href = objectUrl;
       link.download = file.name;
-      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      await wait(500);
+      await wait(1000);
+      URL.revokeObjectURL(objectUrl);
     }
+  } catch (error) {
+    alert("Could not download all PDFs individually. Your browser may be blocking multiple downloads. Please allow multiple downloads for this site, or use the .zip option.");
   } finally {
     button.disabled = false;
     button.textContent = originalText;
