@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ICSE RESOURCES</title>
 
   <style>
@@ -10,6 +11,8 @@
       color: white;
       font-family: 'Segoe UI', Arial, sans-serif;
       padding: 30px;
+      margin: 0;
+      overflow-x: hidden;
     }
 
     h1 {
@@ -77,6 +80,7 @@
       font-size: 16px;
       padding: 0;
       text-align: left;
+      overflow-wrap: anywhere;
     }
 
     .file-preview-button:hover {
@@ -139,6 +143,7 @@
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
+      min-height: 44px;
     }
 
     .preview-title {
@@ -178,6 +183,65 @@
       margin: 0 auto 18px;
       background: white;
       box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 14px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin: 0 0 14px;
+      }
+
+      .folder-header,
+      .file,
+      .download-all {
+        padding: 12px;
+        font-size: 15px;
+      }
+
+      .folder-content {
+        margin-left: 8px;
+        padding-left: 8px;
+      }
+
+      .download-actions {
+        flex-direction: column;
+      }
+
+      .download-all {
+        flex: 1 1 auto;
+        width: 100%;
+      }
+
+      .preview-toolbar {
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+      }
+
+      .preview-title {
+        flex-basis: 100%;
+        font-size: 14px;
+        white-space: normal;
+      }
+
+      .preview-action {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+      }
+
+      .preview-pages {
+        padding: 8px;
+      }
+
+      .preview-pages canvas {
+        margin-bottom: 10px;
+      }
     }
   </style>
 </head>
