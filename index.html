@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -147,12 +147,21 @@
     .preview-action:hover {
       background: #333;
     }
-
-    .preview-frame {
-      width: 100%;
+    .preview-pages {
       flex: 1;
-      border: 0;
-      background: #111;
+      overflow: auto;
+      padding: 18px;
+      background: #151515;
+      text-align: center;
+    }
+
+    .preview-pages canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto 18px;
+      background: white;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
     }
   </style>
 </head>
@@ -167,14 +176,20 @@
     <a id="previewDownload" class="preview-action" href="#" download>Download</a>
     <button id="previewClose" class="preview-action" type="button">Close</button>
   </div>
-  <iframe id="previewFrame" class="preview-frame" title="PDF preview"></iframe>
+  <div id="previewPages" class="preview-pages"></div>
 </div>
 <script data-goatcounter="https://icse-resources-analytics.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 const username = "Logic-Legend-Ranveer";
 const repo = "public-files";
+let previewSession = 0;
+
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+}
 
 async function loadFolder(path, containerElement) {
   const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
@@ -279,25 +294,69 @@ async function loadFolder(path, containerElement) {
   }
 }
 
-function openPdfPreview(file) {
+async function openPdfPreview(file) {
   const modal = document.getElementById("previewModal");
   const title = document.getElementById("previewTitle");
-  const frame = document.getElementById("previewFrame");
+  const pages = document.getElementById("previewPages");
   const download = document.getElementById("previewDownload");
+  const session = ++previewSession;
 
   title.textContent = file.name;
-  frame.src = file.download_url;
+  pages.innerHTML = `<div class="loading">Loading preview...</div>`;
   download.href = file.download_url;
   download.download = file.name;
   modal.classList.add("open");
+
+  try {
+    if (!window.pdfjsLib) {
+      throw new Error("PDF preview tool did not load.");
+    }
+
+    const response = await fetch(file.download_url);
+    if (!response.ok) {
+      throw new Error("Could not fetch the PDF preview.");
+    }
+
+    const pdfData = await response.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+    if (session !== previewSession) return;
+    pages.innerHTML = "";
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      if (session !== previewSession) return;
+
+      const page = await pdf.getPage(pageNumber);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const availableWidth = Math.max(320, pages.clientWidth - 36);
+      const scale = Math.min(1.5, availableWidth / baseViewport.width);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      pages.appendChild(canvas);
+
+      await page.render({ canvasContext: context, viewport }).promise;
+    }
+  } catch (error) {
+    if (session === previewSession) {
+      pages.innerHTML = `
+        <div class="loading" style="color: #ff6b6b;">
+          Preview could not be loaded. Please use the Download button.
+        </div>`;
+    }
+  }
 }
 
 function closePdfPreview() {
   const modal = document.getElementById("previewModal");
-  const frame = document.getElementById("previewFrame");
+  const pages = document.getElementById("previewPages");
 
+  previewSession++;
   modal.classList.remove("open");
-  frame.src = "";
+  pages.innerHTML = "";
 }
 
 function safeZipName(name) {
@@ -395,3 +454,4 @@ loadFolder("files", filesDiv);
 </script>
 </body>
 </html>
+
