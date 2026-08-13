@@ -49,3 +49,7 @@ Please avoid uploading copyrighted material unless you have permission to share 
 ## Keep learning, keep practising
 
 Use these resources steadily throughout the year: small, regular practice sessions are far more effective than last-minute preparation.
+
+
+## **Note**:
+The files listed as unofficial are not verified and the owner does not take any responsibility for their authenticity. 
