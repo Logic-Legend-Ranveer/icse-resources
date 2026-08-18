@@ -1,3 +1,5 @@
-tmpdriveupload/
-.tmpdriveupload/
-.tmp.drivedownload/
+.tmp.driveupload
+.tmp.drivedownload
+tmpdriveupload\
+.tmpdriveupload\
+.tmp.drivedownload\
