@@ -390,6 +390,7 @@ async function fetchPdfData(file) {
 
   return await rawResponse.arrayBuffer();
 }
+
 async function openPdfPreview(file) {
   const modal = document.getElementById("previewModal");
   const title = document.getElementById("previewTitle");
@@ -403,6 +404,9 @@ async function openPdfPreview(file) {
   download.download = file.name;
   modal.classList.add("open");
 
+  // Force mobile browsers to finish reflowing layout so clientWidth is valid
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   try {
     if (!window.pdfjsLib) {
       throw new Error("PDF preview tool did not load.");
@@ -414,15 +418,21 @@ async function openPdfPreview(file) {
     if (session !== previewSession) return;
     pages.innerHTML = "";
 
+    // Robust container width check for mobile devices
+    const containerWidth = pages.clientWidth || window.innerWidth - 30;
+
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
       if (session !== previewSession) return;
 
       const page = await pdf.getPage(pageNumber);
       const baseViewport = page.getViewport({ scale: 1 });
-      const availableWidth = Math.max(320, pages.clientWidth - 36);
-      const scale = Math.min(1.5, availableWidth / baseViewport.width);
+      
+      const availableWidth = Math.max(280, containerWidth - 36);
+      const scale = Math.max(0.5, Math.min(1.5, availableWidth / baseViewport.width));
       const viewport = page.getViewport({ scale });
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, 3);
+      
+      // Cap pixelRatio to 2 on mobile to avoid high memory canvas crashes
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
 
@@ -432,11 +442,16 @@ async function openPdfPreview(file) {
       canvas.style.height = `${Math.floor(viewport.height)}px`;
       pages.appendChild(canvas);
 
-      await page.render({
+      const renderContext = {
         canvasContext: context,
-        viewport,
-        transform: pixelRatio === 1 ? null : [pixelRatio, 0, 0, pixelRatio, 0, 0]
-      }).promise;
+        viewport: viewport
+      };
+
+      if (pixelRatio !== 1) {
+        renderContext.transform = [pixelRatio, 0, 0, pixelRatio, 0, 0];
+      }
+
+      await page.render(renderContext).promise;
     }
   } catch (error) {
     if (session === previewSession) {
@@ -453,7 +468,7 @@ function closePdfPreview() {
   const pages = document.getElementById("previewPages");
 
   previewSession++;
-  modal.classList.remove("open");
+  modal.classList.remove("remove") || modal.classList.remove("open");
   pages.innerHTML = "";
 }
 
@@ -479,7 +494,7 @@ async function savePdfsIndividuallyToFolder(pdfFiles, button) {
 
     for (let index = 0; index < pdfFiles.length; index++) {
       const file = pdfFiles[index];
-      button.textContent = `Saving ${index + 1}/${pdfFiles.length}: ${file.name}`;
+      button.textContent = `Saving ${index + 1}/${pdfFiles.length}:${file.name}`;
 
       const response = await fetch(file.download_url);
       if (!response.ok) {
@@ -514,7 +529,7 @@ async function downloadPdfsAsZip(folderPath, pdfFiles, button) {
   try {
     for (let index = 0; index < pdfFiles.length; index++) {
       const file = pdfFiles[index];
-      button.textContent = `Adding ${index + 1}/${pdfFiles.length}: ${file.name}`;
+      button.textContent = `Adding ${index + 1}/${pdfFiles.length}:${file.name}`;
 
       const response = await fetch(file.download_url);
       if (!response.ok) {
