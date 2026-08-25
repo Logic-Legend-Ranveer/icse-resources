@@ -16,256 +16,309 @@
   <meta property="og:type" content="website">
 
 
-  <style>
-    body {
-  background: #0d1117; /* Set dark background here */
-  color: white;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  padding: 30px;
-  margin: 0;
-  overflow-x: hidden;
-}
+<style>
+  /* ==========================================
+     GLOBAL & BACKGROUND STYLES
+     ========================================== */
+  :root {
+    --bg-dark: #0d1117;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --accent-cyan: #38bdf8;
+    --accent-gold: #ffd700;
+    
+    /* Translucent Glass Values */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-bg-hover: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-hover: rgba(56, 189, 248, 0.4);
+  }
 
-#particleCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Keeps particles strictly behind your content */
-  pointer-events: none; /* Allows clicks to pass through to buttons/links */
-}
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    padding: 30px;
+    margin: 0;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  #particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ==========================================
+     HEADINGS & LINKS
+     ========================================== */
+  h1 {
+    color: var(--accent-cyan);
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  a, .file-preview-button {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    font-size: 16px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+  }
+
+  a:hover, .file-preview-button:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  /* ==========================================
+     FOLDERS & FILES (GLASSMORPHISM)
+     ========================================== */
+  .folder-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    color: var(--accent-gold);
+    padding: 10px 14px;
+    margin: 6px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .folder-header:hover {
+    background: var(--glass-bg-hover);
+    border-color: rgba(255, 215, 0, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .folder-content {
+    margin-left: 16px;
+    border-left: 2px solid rgba(255, 255, 255, 0.15);
+    padding-left: 12px;
+    display: none;
+  }
+
+  .folder-content.open {
+    display: block;
+  }
+
+  .file {
+    background: var(--glass-bg);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--glass-border);
+    padding: 10px 14px;
+    margin: 6px 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .file:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+  }
+
+  .loading {
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 6px 14px;
+  }
+
+  /* ==========================================
+     BUTTONS & ACTIONS
+     ========================================== */
+  .download-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 6px 0 10px;
+  }
+
+  .download-all {
+    background: rgba(56, 189, 248, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-hover);
+    color: var(--accent-cyan);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    flex: 1 1 260px;
+    transition: all 0.2s ease;
+  }
+
+  .download-all:hover {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: var(--accent-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+  }
+
+  .download-all:disabled {
+    cursor: wait;
+    opacity: 0.5;
+  }
+
+  /* ==========================================
+     MODAL & PREVIEW OVERLAY
+     ========================================== */
+  .preview-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    background: rgba(13, 17, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .preview-modal.open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-toolbar {
+    background: rgba(22, 27, 34, 0.8);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+
+  .preview-title {
+    color: var(--text-primary);
+    font-weight: 700;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview-action {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+  }
+
+  .preview-action:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+  }
+
+  .preview-pages {
+    flex: 1;
+    overflow: auto;
+    padding: 18px;
+    background: transparent;
+    text-align: center;
+  }
+
+  .preview-pages canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 18px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+  }
+
+  /* ==========================================
+     MOBILE RESPONSIVENESS
+     ========================================== */
+  @media (max-width: 700px) {
+    body {
+      padding: 14px;
+    }
 
     h1 {
-      color: #00ffcc;
-      margin-bottom: 20px;
+      font-size: 24px;
+      margin: 0 0 14px;
     }
 
-    .folder-header {
-      background: #252526;
-      color: #ffd700;
-      padding: 10px 14px;
-      margin: 6px 0;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-
-    .folder-header:hover {
-      background: #333333;
+    .folder-header,
+    .file,
+    .download-all {
+      padding: 12px;
+      font-size: 15px;
     }
 
     .folder-content {
-      margin-left: 20px;
-      border-left: 2px solid #333;
-      padding-left: 10px;
-      display: none;
-    }
-
-    .folder-content.open {
-      display: block;
-    }
-
-    .file {
-      background: #1e1e1e;
-      padding: 10px 14px;
-      margin: 4px 0;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    a {
-      color: #66ccff;
-      text-decoration: none;
-      font-size: 16px;
-    }
-
-    a:hover {
-      color: #ffffff;
-      text-decoration: underline;
-    }
-
-    .file-preview-button {
-      background: none;
-      border: 0;
-      color: #66ccff;
-      cursor: pointer;
-      font: inherit;
-      font-size: 16px;
-      padding: 0;
-      text-align: left;
-      overflow-wrap: anywhere;
-    }
-
-    .file-preview-button:hover {
-      color: #ffffff;
-      text-decoration: underline;
-    }
-
-    .loading {
-      color: #aaa;
-      font-style: italic;
-      padding: 6px 14px;
+      margin-left: 8px;
+      padding-left: 8px;
     }
 
     .download-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 6px 0 10px;
-    }
-
-    .download-all {
-      background: #12352f;
-      border: 1px solid #00b894;
-      color: #d7fff6;
-      padding: 10px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font: inherit;
-      font-weight: 700;
-      text-align: left;
-      flex: 1 1 260px;
-    }
-
-    .download-all:hover {
-      background: #165146;
-    }
-
-    .download-all:disabled {
-      cursor: wait;
-      opacity: 0.75;
-    }
-
-    .preview-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: none;
-      background: rgba(0, 0, 0, 0.92);
-    }
-
-    .preview-modal.open {
-      display: flex;
       flex-direction: column;
     }
 
+    .download-all {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+
     .preview-toolbar {
-      background: #1e1e1e;
-      border-bottom: 1px solid #333;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      min-height: 44px;
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
     }
 
     .preview-title {
-      color: #fff;
-      font-weight: 700;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      flex-basis: 100%;
+      font-size: 14px;
+      white-space: normal;
     }
 
     .preview-action {
-      background: #252526;
-      border: 1px solid #444;
-      color: #fff;
-      border-radius: 6px;
-      cursor: pointer;
-      font: inherit;
-      padding: 8px 12px;
+      flex: 1;
+      text-align: center;
+      padding: 10px;
     }
 
-    .preview-action:hover {
-      background: #333;
-    }
     .preview-pages {
-      flex: 1;
-      overflow: auto;
-      padding: 18px;
-      background: #151515;
-      text-align: center;
+      padding: 6px;
     }
 
     .preview-pages canvas {
-      display: block;
-      max-width: 100%;
-      height: auto;
-      margin: 0 auto 18px;
-      background: white;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+      margin-bottom: 10px;
     }
-
-    @media (max-width: 700px) {
-      body {
-        padding: 14px;
-      }
-
-      h1 {
-        font-size: 24px;
-        margin: 0 0 14px;
-      }
-
-      .folder-header,
-      .file,
-      .download-all {
-        padding: 12px;
-        font-size: 15px;
-      }
-
-      .folder-content {
-        margin-left: 8px;
-        padding-left: 8px;
-      }
-
-      .download-actions {
-        flex-direction: column;
-      }
-
-      .download-all {
-        flex: 1 1 auto;
-        width: 100%;
-      }
-
-      .preview-toolbar {
-        align-items: stretch;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px;
-      }
-
-      .preview-title {
-        flex-basis: 100%;
-        font-size: 14px;
-        white-space: normal;
-      }
-
-      .preview-action {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-      }
-
-      .preview-pages {
-        padding: 6px;
-      }
-
-      .preview-pages canvas {
-        margin-bottom: 10px;
-      }
-    }
-  
-  </style>
+  }
+</style>
 </head>
 
 <body>
