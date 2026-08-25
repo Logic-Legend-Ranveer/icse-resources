@@ -18,13 +18,23 @@
 
   <style>
     body {
-      background: #111;
-      color: white;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      padding: 30px;
-      margin: 0;
-      overflow-x: hidden;
-    }
+  background: #0d1117; /* Set dark background here */
+  color: white;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  padding: 30px;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+#particleCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Keeps particles strictly behind your content */
+  pointer-events: none; /* Allows clicks to pass through to buttons/links */
+}
 
     h1 {
       color: #00ffcc;
@@ -254,10 +264,12 @@
         margin-bottom: 10px;
       }
     }
+  
   </style>
 </head>
 
 <body>
+  <canvas id="particleCanvas"></canvas>
 <h1>ICSE Class 10 Study Material & PDF Resources</h1>
 
   <!-- Descriptive Subtitle/Paragraph for Search Crawlers -->
@@ -589,6 +601,89 @@ loadFolder("files", filesDiv);
 </script>
 <h2>OTHER HELPFUL LINKS</h2>
 <a href="https://www.knowledgeboat.com/solutions/icse/class-10">Knowledge Boat</a>
+<script>
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+
+let particles = [];
+const particleCount = 65; // Adjust count for more/fewer dots
+const maxDistance = 120;  // Max distance to draw connecting lines
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Particle Class
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.8; // Slow floating velocity
+    this.vy = (Math.random() - 0.5) * 0.8;
+    this.radius = 2;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Bounce off edges smoothly
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 255, 204, 0.7)'; // Accent color matching your theme
+    ctx.fill();
+  }
+}
+
+// Create Initial Particles
+for (let i = 0; i < particleCount; i++) {
+  particles.push(new Particle());
+}
+
+// Animation Loop
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Update and draw dots
+  particles.forEach(p => {
+    p.update();
+    p.draw();
+  });
+
+  // Draw connecting straight lines between nearby dots
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < maxDistance) {
+        // Line transparency scales with distance
+        const alpha = 1 - (dist / maxDistance);
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0, 255, 204, ${alpha * 0.25})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
 </body>
 </html>
 
