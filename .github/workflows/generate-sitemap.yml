@@ -1,0 +1,29 @@
+name: Generate Sitemap
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate XML Sitemap
+        uses: cicirello/generate-sitemap@v1
+        with:
+          base-url-path: https://logic-legend-ranveer.github.io/icse-resources/
+          include-html: true
+          include-pdf: true
+          sitemap-format: xml
+
+      - name: Commit and Push Sitemap
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "auto: update sitemap.xml via GitHub Actions"
+          file_pattern: sitemap.xml
