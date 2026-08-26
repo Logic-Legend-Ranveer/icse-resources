@@ -496,7 +496,7 @@
   // Fetch and index everything from sitemap.xml on page load
   async function loadSitemapData() {
     try {
-      const response = await fetch('sitemap.xml');
+      const response = await fetch('https://logic-legend-ranveer.github.io/icse-resources/sitemap.xml');
       if (!response.ok) throw new Error('Sitemap missing');
       
       const xmlText = await response.text();
