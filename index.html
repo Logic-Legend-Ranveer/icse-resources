@@ -493,6 +493,31 @@
 <script>
   let globalSitemapFiles = [];
 
+  // Synonym Dictionary for smart term mapping
+  const SYNONYMS = {
+    'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
+    'previous': ['pyq', 'pyqs', 'previous', 'past'],
+    'past': ['pyq', 'pyqs', 'previous', 'past'],
+    'paper': ['paper', 'papers', 'question', 'qp'],
+    'specimen': ['specimen', 'sample', 'model'],
+    'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
+    'masterkey': ['masterkey', 'master', 'key', 'notes']
+  };
+
+  // Expand search queries based on synonyms
+  function getSearchTerms(query) {
+    const rawTokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    return rawTokens.map(token => {
+      const expanded = [token];
+      for (const [key, list] of Object.entries(SYNONYMS)) {
+        if (list.includes(token) || key === token) {
+          expanded.push(...list, key);
+        }
+      }
+      return Array.from(new Set(expanded));
+    });
+  }
+
   // Fetch and index everything from sitemap.xml on page load
   async function loadSitemapData() {
     try {
@@ -513,8 +538,6 @@
         if (decodedPath.endsWith('.pdf')) {
           const pathSegments = decodedPath.split('/').filter(Boolean);
           const fileName = pathSegments.pop();
-          
-          // Isolate folder path structure
           const folderPath = pathSegments.slice(2).join('/');
 
           globalSitemapFiles.push({
@@ -529,69 +552,16 @@
         }
       });
 
-      // Update counters directly from sitemap data
-      document.getElementById('stat-files').textContent = globalSitemapFiles.length;
-      document.getElementById('stat-folders').textContent = folderPaths.size;
+      // Update counters safely
+      const totalPdfsEl = document.getElementById('total-pdfs') || document.getElementById('stat-files');
+      const totalFoldersEl = document.getElementById('total-folders') || document.getElementById('stat-folders');
+
+      if (totalPdfsEl) totalPdfsEl.textContent = globalSitemapFiles.length;
+      if (totalFoldersEl) totalFoldersEl.textContent = folderPaths.size;
 
     } catch (err) {
       console.warn('Could not load sitemap.xml for global stats/search:', err);
     }
-  }
-
-  // Live Instant Search across all sitemap PDFs
-  // Synonym Dictionary for smart term mapping
-  const SYNONYMS = {
-    'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
-    'previous': ['pyq', 'pyqs', 'previous', 'past'],
-    'past': ['pyq', 'pyqs', 'previous', 'past'],
-    'paper': ['paper', 'papers', 'question', 'qp'],
-    'specimen': ['specimen', 'sample', 'model'],
-    'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
-    'masterkey': ['masterkey', 'master', 'key', 'notes']
-  };
-
-  // Expand search queries based on synonyms
-  function getSearchTerms(query) {
-    const rawTokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-    
-    return rawTokens.map(token => {
-      // Find if token matches any synonym group
-      const expanded = [token];
-      for (const [key, list] of Object.entries(SYNONYMS)) {
-        if (list.includes(token) || key === token) {
-          expanded.push(...list, key);
-        }
-      }
-      return Array.from(new Set(expanded)); // Remove duplicates
-    });
-  }
-
-  // Smart Live Instant Search across all sitemap PDFs
-  // Synonym Dictionary for smart term mapping
-  const SYNONYMS = {
-    'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
-    'previous': ['pyq', 'pyqs', 'previous', 'past'],
-    'past': ['pyq', 'pyqs', 'previous', 'past'],
-    'paper': ['paper', 'papers', 'question', 'qp'],
-    'specimen': ['specimen', 'sample', 'model'],
-    'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
-    'masterkey': ['masterkey', 'master', 'key', 'notes']
-  };
-
-  // Expand search queries based on synonyms
-  function getSearchTerms(query) {
-    const rawTokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-    
-    return rawTokens.map(token => {
-      // Find if token matches any synonym group
-      const expanded = [token];
-      for (const [key, list] of Object.entries(SYNONYMS)) {
-        if (list.includes(token) || key === token) {
-          expanded.push(...list, key);
-        }
-      }
-      return Array.from(new Set(expanded)); // Remove duplicates
-    });
   }
 
   // Smart Live Instant Search across all sitemap PDFs
@@ -603,41 +573,44 @@
     if (!searchResultsContainer) {
       searchResultsContainer = document.createElement('div');
       searchResultsContainer.id = 'search-results';
-      mainContainer.parentNode.insertBefore(searchResultsContainer, mainContainer);
+      if (mainContainer && mainContainer.parentNode) {
+        mainContainer.parentNode.insertBefore(searchResultsContainer, mainContainer);
+      }
     }
 
     if (query === '') {
-      searchResultsContainer.style.display = 'none';
-      searchResultsContainer.innerHTML = '';
-      mainContainer.style.display = 'flex';
+      if (searchResultsContainer) {
+        searchResultsContainer.style.display = 'none';
+        searchResultsContainer.innerHTML = '';
+      }
+      if (mainContainer) mainContainer.style.display = 'flex';
       return;
     }
 
-    mainContainer.style.display = 'none';
-    searchResultsContainer.style.display = 'flex';
-    searchResultsContainer.style.flexDirection = 'column';
-    searchResultsContainer.style.gap = '8px';
+    if (mainContainer) mainContainer.style.display = 'none';
+    if (searchResultsContainer) {
+      searchResultsContainer.style.display = 'flex';
+      searchResultsContainer.style.flexDirection = 'column';
+      searchResultsContainer.style.gap = '8px';
+    }
 
-    // Get group of acceptable words for each search word
     const termGroups = getSearchTerms(query);
 
     const matches = globalSitemapFiles.filter(item => {
       const fullTargetText = `${item.name} ${item.path}`.toLowerCase();
-      
-      // Every search term group must have AT LEAST ONE word matching in the file/path name
       return termGroups.every(group => 
         group.some(term => fullTargetText.includes(term))
       );
     });
 
     if (matches.length === 0) {
-      searchResultsContainer.innerHTML = `<div class="loading">No matching PDFs found for "${query}"</div>`;
+      searchResultsContainer.innerHTML = `<div class="loading" style="padding: 12px; color: var(--text-secondary);">No matching PDFs found for "${query}"</div>`;
       return;
     }
 
     searchResultsContainer.innerHTML = matches.map(file => `
-      <div class="file">
-        📄 <a href="${file.url}" target="_blank" rel="noopener">${file.name}</a>
+      <div class="file" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center;">
+        📄 <a href="${file.url}" target="_blank" rel="noopener" style="margin-left: 8px; color: var(--text-main); text-decoration: none;">${file.name}</a>
         <span style="font-size: 12px; color: var(--text-secondary); margin-left: auto;">${file.path}</span>
       </div>
     `).join('');
