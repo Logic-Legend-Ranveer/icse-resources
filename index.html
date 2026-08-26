@@ -539,6 +539,62 @@
   }
 
   // Live Instant Search across all sitemap PDFs
+  // Synonym Dictionary for smart term mapping
+  const SYNONYMS = {
+    'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
+    'previous': ['pyq', 'pyqs', 'previous', 'past'],
+    'past': ['pyq', 'pyqs', 'previous', 'past'],
+    'paper': ['paper', 'papers', 'question', 'qp'],
+    'specimen': ['specimen', 'sample', 'model'],
+    'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
+    'masterkey': ['masterkey', 'master', 'key', 'notes']
+  };
+
+  // Expand search queries based on synonyms
+  function getSearchTerms(query) {
+    const rawTokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    
+    return rawTokens.map(token => {
+      // Find if token matches any synonym group
+      const expanded = [token];
+      for (const [key, list] of Object.entries(SYNONYMS)) {
+        if (list.includes(token) || key === token) {
+          expanded.push(...list, key);
+        }
+      }
+      return Array.from(new Set(expanded)); // Remove duplicates
+    });
+  }
+
+  // Smart Live Instant Search across all sitemap PDFs
+  // Synonym Dictionary for smart term mapping
+  const SYNONYMS = {
+    'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
+    'previous': ['pyq', 'pyqs', 'previous', 'past'],
+    'past': ['pyq', 'pyqs', 'previous', 'past'],
+    'paper': ['paper', 'papers', 'question', 'qp'],
+    'specimen': ['specimen', 'sample', 'model'],
+    'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
+    'masterkey': ['masterkey', 'master', 'key', 'notes']
+  };
+
+  // Expand search queries based on synonyms
+  function getSearchTerms(query) {
+    const rawTokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    
+    return rawTokens.map(token => {
+      // Find if token matches any synonym group
+      const expanded = [token];
+      for (const [key, list] of Object.entries(SYNONYMS)) {
+        if (list.includes(token) || key === token) {
+          expanded.push(...list, key);
+        }
+      }
+      return Array.from(new Set(expanded)); // Remove duplicates
+    });
+  }
+
+  // Smart Live Instant Search across all sitemap PDFs
   function filterResources() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const mainContainer = document.getElementById('files-container');
@@ -562,9 +618,17 @@
     searchResultsContainer.style.flexDirection = 'column';
     searchResultsContainer.style.gap = '8px';
 
-    const matches = globalSitemapFiles.filter(item => 
-      item.name.toLowerCase().includes(query) || item.path.toLowerCase().includes(query)
-    );
+    // Get group of acceptable words for each search word
+    const termGroups = getSearchTerms(query);
+
+    const matches = globalSitemapFiles.filter(item => {
+      const fullTargetText = `${item.name} ${item.path}`.toLowerCase();
+      
+      // Every search term group must have AT LEAST ONE word matching in the file/path name
+      return termGroups.every(group => 
+        group.some(term => fullTargetText.includes(term))
+      );
+    });
 
     if (matches.length === 0) {
       searchResultsContainer.innerHTML = `<div class="loading">No matching PDFs found for "${query}"</div>`;
