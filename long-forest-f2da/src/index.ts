@@ -10,77 +10,50 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
-export interface Env {
-  GITHUB_TOKEN?: string;
-}
-
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    
-    let path = url.pathname;
-    if (path === "/" || path === "") {
-      path = "/index.html";
+    const path = url.pathname.replace(/^\/+/, ""); // Removes leading slashes
+
+    const username = "Logic-Legend-Ranveer";
+    const repo = "icse-resources";
+
+    // 1. If path is empty (root URL), fetch and serve your index.html from GitHub
+    if (!path || path === "") {
+      const htmlUrl = `https://raw.githubusercontent.com/${username}/${repo}/main/index.html`;
+      const htmlResponse = await fetch(htmlUrl, {
+        headers: {
+          "User-Agent": "Cloudflare-Worker-Proxy",
+          "Authorization": `token ${env.GITHUB_TOKEN}`
+        }
+      });
+
+      return new Response(htmlResponse.body, {
+        status: htmlResponse.status,
+        headers: {
+          "Content-Type": "text/html;charset=UTF-8",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
     }
 
-    // Replace with your GitHub username
-    const githubUrl = `https://raw.githubusercontent.com/Logic-Legend-Ranveer/icse-resources/main${path}`;
+    // 2. Otherwise, proxy folder/file content requests to the GitHub API safely
+    const githubApiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
 
-    // Setup fetch options with optional PAT authentication
-    const fetchHeaders: Record<string, string> = {
-      'User-Agent': 'Cloudflare-Worker'
-    };
-    if (env.GITHUB_TOKEN) {
-      fetchHeaders['Authorization'] = `token ${env.GITHUB_TOKEN}`;
-    }
-
-    const response = await fetch(githubUrl, { headers: fetchHeaders });
-
-    if (response.status === 404) {
-      return new Response(`File not found: ${path}`, { status: 404 });
-    }
-
-    const newHeaders = new Headers(response.headers);
-    
-    // 1. Fully disable CSP and Sandboxing so Canvas & Scripts can run freely
-    newHeaders.delete('Content-Security-Policy');
-    newHeaders.delete('Content-Security-Policy-Report-Only');
-    newHeaders.delete('X-Content-Security-Policy');
-    newHeaders.delete('Content-Encoding'); // Let Cloudflare handle compression
-
-    // 2. Allow CORS and frame access
-    newHeaders.set('Access-Control-Allow-Origin', '*');
-    newHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-
-    // 3. Strict Content-Type dictionary
-    const mimeTypes: Record<string, string> = {
-      '.html': 'text/html; charset=utf-8',
-      '.css':  'text/css; charset=utf-8',
-      '.js':   'application/javascript; charset=utf-8',
-      '.mjs':  'application/javascript; charset=utf-8',
-      '.json': 'application/json; charset=utf-8',
-      '.pdf':  'application/pdf',
-      '.png':  'image/png',
-      '.jpg':  'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.svg':  'image/svg+xml',
-      '.webp': 'image/webp',
-      '.ico':  'image/x-icon',
-      '.woff2': 'font/woff2',
-      '.ttf':  'font/ttf'
-    };
-
-    for (const [ext, type] of Object.entries(mimeTypes)) {
-      if (path.toLowerCase().endsWith(ext)) {
-        newHeaders.set('Content-Type', type);
-        break;
+    const githubResponse = await fetch(githubApiUrl, {
+      headers: {
+        "User-Agent": "Cloudflare-Worker-Proxy",
+        "Authorization": `token ${env.GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github.v3+json"
       }
-    }
+    });
 
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders,
+    return new Response(githubResponse.body, {
+      status: githubResponse.status,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     });
   }
 };

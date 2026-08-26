@@ -373,8 +373,11 @@ if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 }
 async function loadFolder(path, containerElement) {
-  // Fetch through your Cloudflare Worker proxy route instead of direct GitHub API
-  const url = `/${path}`;
+  // Automatically detects if we are on GitHub Pages or Cloudflare Worker
+  const isGitHubPages = window.location.hostname.includes("github.io");
+  const url = isGitHubPages 
+    ? `https://api.github.com/repos/${username}/${repo}/contents/${path}` 
+    : `/${path}`;
 
   try {
     const response = await fetch(url);
