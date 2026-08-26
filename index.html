@@ -491,6 +491,95 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
+  let globalSitemapFiles = [];
+
+  // Fetch and index everything from sitemap.xml on page load
+  async function loadSitemapData() {
+    try {
+      const response = await fetch('sitemap.xml');
+      if (!response.ok) throw new Error('Sitemap missing');
+      
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const urls = Array.from(xmlDoc.querySelectorAll('loc')).map(el => el.textContent);
+
+      const folderPaths = new Set();
+      globalSitemapFiles = [];
+
+      urls.forEach(rawUrl => {
+        const decodedPath = decodeURIComponent(rawUrl);
+        
+        if (decodedPath.endsWith('.pdf')) {
+          const pathSegments = decodedPath.split('/').filter(Boolean);
+          const fileName = pathSegments.pop();
+          
+          // Isolate folder path structure
+          const folderPath = pathSegments.slice(2).join('/');
+
+          globalSitemapFiles.push({
+            name: fileName,
+            url: rawUrl,
+            path: folderPath
+          });
+
+          if (folderPath) {
+            folderPaths.add(folderPath);
+          }
+        }
+      });
+
+      // Update counters directly from sitemap data
+      document.getElementById('stat-files').textContent = globalSitemapFiles.length;
+      document.getElementById('stat-folders').textContent = folderPaths.size;
+
+    } catch (err) {
+      console.warn('Could not load sitemap.xml for global stats/search:', err);
+    }
+  }
+
+  // Live Instant Search across all sitemap PDFs
+  function filterResources() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const mainContainer = document.getElementById('files-container');
+    let searchResultsContainer = document.getElementById('search-results');
+
+    if (!searchResultsContainer) {
+      searchResultsContainer = document.createElement('div');
+      searchResultsContainer.id = 'search-results';
+      mainContainer.parentNode.insertBefore(searchResultsContainer, mainContainer);
+    }
+
+    if (query === '') {
+      searchResultsContainer.style.display = 'none';
+      searchResultsContainer.innerHTML = '';
+      mainContainer.style.display = 'flex';
+      return;
+    }
+
+    mainContainer.style.display = 'none';
+    searchResultsContainer.style.display = 'flex';
+    searchResultsContainer.style.flexDirection = 'column';
+    searchResultsContainer.style.gap = '8px';
+
+    const matches = globalSitemapFiles.filter(item => 
+      item.name.toLowerCase().includes(query) || item.path.toLowerCase().includes(query)
+    );
+
+    if (matches.length === 0) {
+      searchResultsContainer.innerHTML = `<div class="loading">No matching PDFs found for "${query}"</div>`;
+      return;
+    }
+
+    searchResultsContainer.innerHTML = matches.map(file => `
+      <div class="file">
+        📄 <a href="${file.url}" target="_blank" rel="noopener">${file.name}</a>
+        <span style="font-size: 12px; color: var(--text-secondary); margin-left: auto;">${file.path}</span>
+      </div>
+    `).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', loadSitemapData);
 const username = "Logic-Legend-Ranveer";
 const repo = "icse-resources";
 let previewSession = 0;
