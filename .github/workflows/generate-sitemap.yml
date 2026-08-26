@@ -25,5 +25,5 @@ jobs:
       - name: Commit and Push Sitemap
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "auto: update sitemap.xml via GitHub Actions"
+          commit_message: "auto: update sitemap.xml via GitHub Actions [skip ci]"
           file_pattern: sitemap.xml
