@@ -109,34 +109,39 @@
      FOLDERS & FILES (GLASSMORPHISM)
      ========================================== */
      /* Container for all folders */
+     /* Container forces a multi-column card grid */
 #files-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 16px !important;
   margin-top: 20px;
 }
 
-/* Transform folders into cards */
+/* Card Styling for Folders */
 .folder-header {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
+  color: var(--accent-gold) !important; /* Restore Gold color */
+  padding: 16px 20px;
+  margin: 0;
   border-radius: 12px;
-  padding: 16px;
-  margin: 0; /* Reset list margin */
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  user-select: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+  gap: 12px; /* Keep icon and text together on the left */
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .folder-header:hover {
   background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
+  border-color: rgba(255, 215, 0, 0.5);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
   .folder-content {
@@ -363,7 +368,7 @@
   <!-- Section Header (h2) -->
   <h2>Browse Subject Folders & PDF Notes</h2>
 
-<div id="files"></div>
+<div id="files-container"></div>
 <div id="previewModal" class="preview-modal">
   <div class="preview-toolbar">
     <div id="previewTitle" class="preview-title">PDF Preview</div>
