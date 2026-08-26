@@ -111,49 +111,61 @@
      ========================================== */
      /* Container for all folders */
      /* Container forces a multi-column card grid */
-#files-container {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-  gap: 16px !important;
-  margin-top: 20px;
-}
+/* ==========================================
+     FOLDERS (PREMIUM VERTICAL LIST)
+     ========================================== */
+  #files-container {
+    display: flex !important;
+    flex-direction: column;
+    gap: 14px; /* Creates clean spacing between folder cards */
+    margin-top: 20px;
+  }
 
-/* Card Styling for Folders */
-.folder-header {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  color: var(--accent-gold) !important; /* Restore Gold color */
-  padding: 16px 20px;
-  margin: 0;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 12px; /* Keep icon and text together on the left */
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  .folder-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    color: var(--accent-gold) !important;
+    padding: 16px 20px;
+    margin: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
 
-.folder-header:hover {
-  background: var(--glass-bg-hover);
-  border-color: rgba(255, 215, 0, 0.5);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
+  .folder-header:hover {
+    background: var(--glass-bg-hover);
+    border-color: rgba(255, 215, 0, 0.4);
+    /* Slides right slightly instead of up, perfect for vertical lists */
+    transform: translateX(6px); 
+    box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.3);
+  }
 
   .folder-content {
-    margin-left: 16px;
-    border-left: 2px solid rgba(255, 255, 255, 0.15);
-    padding-left: 12px;
+    /* Anchors the files visually to the folder they belong to */
+    margin-left: 24px; 
+    margin-top: -4px; 
+    margin-bottom: 8px;
+    border-left: 2px solid rgba(255, 215, 0, 0.3);
+    padding-left: 16px;
     display: none;
   }
 
   .folder-content.open {
     display: block;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .file {
