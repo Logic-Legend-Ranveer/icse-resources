@@ -366,15 +366,15 @@
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 const username = "Logic-Legend-Ranveer";
-const repo = "public-files";
+const repo = "icse-resources";
 let previewSession = 0;
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 }
-
 async function loadFolder(path, containerElement) {
-  const url = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+  // Fetch through your Cloudflare Worker proxy route instead of direct GitHub API
+  const url = `/${path}`;
 
   try {
     const response = await fetch(url);
