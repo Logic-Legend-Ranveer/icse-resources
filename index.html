@@ -680,7 +680,7 @@ async function downloadPdfsAsZip(folderPath, pdfFiles, button) {
   }
 }
 
-const filesDiv = document.getElementById("files");
+const filesDiv = document.getElementById("files-container");
 document.getElementById("previewClose").addEventListener("click", closePdfPreview);
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closePdfPreview();
