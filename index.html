@@ -303,27 +303,91 @@
     border-radius: 4px;
   }
 
-  /* ==========================================
+ /* ==========================================
      MOBILE RESPONSIVENESS
      ========================================== */
   @media (max-width: 700px) {
-    
+    body {
+      padding: 14px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin: 0 0 14px;
+    }
+
+    .folder-header,
+    .file,
+    .download-all {
+      padding: 12px;
+      font-size: 15px;
+    }
+
+    /* Compact Stats Bar & Search for Mobile */
+    .stats-search-container {
+      width: 100%;
+      gap: 14px;
+      margin: 15px 0 25px 0;
+    }
+
     .stats-bar {
-      gap: 16px;
-      padding: 12px 16px;
+      width: 100%;
+      box-sizing: border-box;
+      justify-content: space-around;
+      gap: 8px;
+      padding: 10px 8px;
     }
 
     .stat-number {
-      font-size: 22px;
+      font-size: 18px;
+      white-space: nowrap;
     }
 
     .stat-label {
-      font-size: 10px;
+      font-size: 9px;
+      letter-spacing: 0.03em;
     }
 
     .stat-divider {
-      height: 24px;
+      height: 20px;
     }
+
+    .download-actions {
+      flex-direction: column;
+    }
+
+    .download-all {
+      flex: 1 1 auto;
+      width: 100%;
+    }
+
+    .preview-toolbar {
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .preview-title {
+      flex-basis: 100%;
+      font-size: 14px;
+      white-space: normal;
+    }
+
+    .preview-action {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .preview-pages {
+      padding: 6px;
+    }
+
+    .preview-pages canvas {
+      margin-bottom: 10px;
+    }
+  }
     body {
       padding: 14px;
     }
