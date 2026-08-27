@@ -323,7 +323,7 @@
       font-size: 15px;
     }
 
-    /* Compact Stats Bar & Search for Mobile */
+    /* Stats & Search Mobile Fix */
     .stats-search-container {
       width: 100%;
       gap: 14px;
@@ -333,23 +333,29 @@
     .stats-bar {
       width: 100%;
       box-sizing: border-box;
-      justify-content: space-around;
-      gap: 8px;
-      padding: 10px 8px;
+      padding: 12px 6px;
+      gap: 4px;
+      justify-content: space-evenly;
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 0; /* Prevents text from pushing past card borders */
     }
 
     .stat-number {
-      font-size: 18px;
-      white-space: nowrap;
+      font-size: 16px;
+      line-height: 1.2;
     }
 
     .stat-label {
-      font-size: 9px;
-      letter-spacing: 0.03em;
+      font-size: 8.5px;
+      letter-spacing: 0.02em;
     }
 
     .stat-divider {
-      height: 20px;
+      height: 24px;
+      flex-shrink: 0;
     }
 
     .download-actions {
