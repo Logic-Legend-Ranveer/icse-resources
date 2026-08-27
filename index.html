@@ -304,9 +304,47 @@
   }
 
  /* ==========================================
-     MOBILE RESPONSIVENESS
+     MOBILE OVERRIDES (max-width: 700px)
      ========================================== */
   @media (max-width: 700px) {
+    
+    .stats-search-container {
+      align-items: stretch;  /* Allows elements to fill width nicely on phone */
+      gap: 16px;             /* Prevents stats bar and search bar from touching */
+      margin: 15px 0 25px 0;
+    }
+
+    .stats-bar {
+      display: flex;
+      width: 100%;
+      box-sizing: border-box;
+      gap: 8px;
+      padding: 12px 10px;
+      justify-content: space-around;
+    }
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 20px;       /* Scaled to prevent 2454 Mb from splitting into 2 lines */
+      white-space: nowrap;   /* Ensures number & unit stay strictly on 1 line */
+    }
+
+    .stat-label {
+      font-size: 9.5px;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-divider {
+      height: 24px;
+    }
+
+    /* ... Keep existing body, h1, folder-header, and preview styles below ... */
+  }
+
     body {
       padding: 14px;
     }
@@ -322,43 +360,6 @@
       padding: 12px;
       font-size: 15px;
     }
-  /* Mobile: Fits within 100% width without breaking borders */
-  .stats-search-container {
-    width: 100%;
-    gap: 14px;
-    margin: 15px 0 25px 0;
-  }
-
-  .stats-bar {
-    display: flex; /* Switches to full width box only on small screens */
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 8px;
-    gap: 4px;
-    justify-content: space-evenly;
-  }
-
-  .stat-item {
-    flex: 1;
-    min-width: 0; /* Prevents text overflow on thin phones */
-  }
-
-  .stat-number {
-    font-size: 16px;
-    line-height: 1.2;
-  }
-
-  .stat-label {
-    font-size: 8.5px;
-    letter-spacing: 0.02em;
-  }
-
-  .stat-divider {
-    height: 22px;
-    flex-shrink: 0;
-  }
-
-
     .download-actions {
       flex-direction: column;
     }
@@ -452,20 +453,23 @@
   /* ==========================================
      STATS COUNTER & SEARCH STYLES
      ========================================== */
-  /* Desktop: Keeps the bar compact and centered */
+  /* ==========================================
+   DESKTOP STATS & SEARCH LAYOUT
+   ========================================== */
 .stats-search-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  align-items: center;    /* Centers stats bar & search input on desktop */
+  gap: 16px;              /* Gives breathing room between stats bar & search bar */
   margin: 25px 0 35px 0;
+  width: 100%;
 }
 
 .stats-bar {
-  display: inline-flex; /* Shrink-wraps cleanly around the stats on desktop */
+  display: inline-flex;   /* Wraps neatly around contents on desktop */
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: 32px;              /* Desktop gap between stat items */
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -475,55 +479,30 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
+.stat-item {
+  text-align: center;
+}
 
+.stat-number {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--accent-gold);
+  line-height: 1.1;
+}
 
-  .stat-item {
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-    text-align: center;
-
-  }
-
-
-
-  .stat-number {
-
-    display: block;
-
-    font-size: 30px;
-
-    font-weight: 800;
-
-    color: var(--accent-gold);
-
-    line-height: 1.1;
-
-  }
-
-
-
-  .stat-label {
-
-    font-size: 12px;
-
-    color: var(--text-secondary);
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.08em;
-
-  }
-
-
-
-  .stat-divider {
-
-    width: 1px;
-
-    height: 32px;
-
-    background: var(--glass-border);
-
-  } 
+.stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--glass-border);
+}
 
 
 
