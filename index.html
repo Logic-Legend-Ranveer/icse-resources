@@ -647,8 +647,8 @@
           fetchedCount++;
           
           // Update UI progressively as sizes resolve
-          const totalMb = totalBytes / (1024 * 1024);
-          totalWeightEl.textContent = `${Math.round(totalMb)} MB`;
+          const totalMb = (totalBytes*8) / (1024 * 1024);
+          totalWeightEl.textContent = `${Math.round(totalMb)} Mb`;
         });
 
         await Promise.all(sizePromises);
