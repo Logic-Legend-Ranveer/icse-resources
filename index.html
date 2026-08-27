@@ -758,20 +758,20 @@ async function loadFolder(path, containerElement) {
     }
 
     for (const item of visibleItems) {
-   if (item.type === "dir") {
+  if (item.type === "dir") {
     const folderHeader = document.createElement("div");
     folderHeader.className = "folder-header";
-    folderHeader.innerHTML = `> Folder <span style="margin-left: 8px;">${item.name}</span>`;
+    folderHeader.innerHTML = `> Folder <span style="margin-left: 8px; color: #ffd700;">${item.name}</span>`;
 
     const folderContent = document.createElement("div");
     folderContent.className = "folder-content";
 
     let isLoaded = false;
 
-    // Attach click to the whole folder row
+    // Whole folder card click listener
     folderHeader.addEventListener("click", async () => {
       const isOpen = folderContent.classList.toggle("open");
-      folderHeader.innerHTML = `${isOpen ? "v" : ">"} Folder <span style="margin-left: 8px;">${item.name}</span>`;
+      folderHeader.innerHTML = `${isOpen ? "v" : ">"} Folder <span style="margin-left: 8px; color: #ffd700;">${item.name}</span>`;
 
       if (isOpen && !isLoaded) {
         folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
@@ -783,8 +783,8 @@ async function loadFolder(path, containerElement) {
     containerElement.appendChild(folderHeader);
     containerElement.appendChild(folderContent);
 
-   } else {
-    // Files: Create container div and make the WHOLE div clickable
+  } else {
+    // Whole file card click listener
     const fileItem = document.createElement("div");
     fileItem.className = "file-item";
     fileItem.innerHTML = `
@@ -792,14 +792,13 @@ async function loadFolder(path, containerElement) {
       <span style="color: var(--accent-cyan, #00d4ff); font-weight: 500;">${item.name}</span>
     `;
 
-    // Attach PDF click event to the outer container
     fileItem.addEventListener("click", () => {
       openPdfPreview(item);
     });
 
     containerElement.appendChild(fileItem);
-   }
   }
+}
   } catch (error) {
     containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to fetch contents.</div>`;
   }
