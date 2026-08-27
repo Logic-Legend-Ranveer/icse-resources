@@ -622,8 +622,7 @@
       return;
     }
 
-    // Render results making the ENTIRE row a clickable link
-    // Render results as clickable divs that trigger your custom preview function
+    // Render search results as clickable card rows
     searchResultsContainer.innerHTML = matches.map(file => `
       <div onclick="openSearchPdf('${file.url}')" class="file-result-card" 
          style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; cursor: pointer; transition: background 0.2s;">
@@ -634,18 +633,15 @@
         </span>
       </div>
     `).join('');
+  }
 
-    // Helper function to handle clicks from search results
+  // Helper function defined in global scope so onclick can reach it
   function openSearchPdf(url) {
-    // Find the matching file object from our sitemap array
     const fileObj = globalSitemapFiles.find(f => f.url === url);
     if (fileObj) {
-      // The preview tool expects a download_url property, so we set it
       fileObj.download_url = fileObj.url;
-      // Now open the modal with the proper object!
       openPdfPreview(fileObj);
     }
-  }
   }
 
   document.addEventListener('DOMContentLoaded', loadSitemapData);
