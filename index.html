@@ -463,6 +463,26 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+/* Styling for folder headers and file rows */
+.folder-header,
+.file-item {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+  border-radius: 6px;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+/* Full row hover state */
+.folder-header:hover,
+.file-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 </style>
 </head>
 
@@ -738,45 +758,48 @@ async function loadFolder(path, containerElement) {
     }
 
     for (const item of visibleItems) {
-      if (item.type === "dir") {
-        const folderHeader = document.createElement("div");
-        folderHeader.className = "folder-header";
-        folderHeader.innerHTML = `> Folder <span>${item.name}</span>`;
+   if (item.type === "dir") {
+    const folderHeader = document.createElement("div");
+    folderHeader.className = "folder-header";
+    folderHeader.innerHTML = `> Folder <span style="margin-left: 8px;">${item.name}</span>`;
 
-        const folderContent = document.createElement("div");
-        folderContent.className = "folder-content";
+    const folderContent = document.createElement("div");
+    folderContent.className = "folder-content";
 
-        let isLoaded = false;
+    let isLoaded = false;
 
-        folderHeader.addEventListener("click", async () => {
-          const isOpen = folderContent.classList.toggle("open");
-          folderHeader.innerHTML = `${isOpen ? "v" : ">"} Folder <span>${item.name}</span>`;
+    // Attach click to the whole folder row
+    folderHeader.addEventListener("click", async () => {
+      const isOpen = folderContent.classList.toggle("open");
+      folderHeader.innerHTML = `${isOpen ? "v" : ">"} Folder <span style="margin-left: 8px;">${item.name}</span>`;
 
-          if (isOpen && !isLoaded) {
-            folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
-            await loadFolder(item.path, folderContent);
-            isLoaded = true;
-          }
-        });
-
-        containerElement.appendChild(folderHeader);
-        containerElement.appendChild(folderContent);
-      } else if (item.type === "file") {
-        const fileDiv = document.createElement("div");
-        fileDiv.className = "file";
-
-        const previewButton = document.createElement("button");
-        previewButton.className = "file-preview-button";
-        previewButton.type = "button";
-        previewButton.textContent = item.name;
-        previewButton.addEventListener("click", () => openPdfPreview(item));
-
-        fileDiv.innerHTML = `File `;
-        fileDiv.appendChild(previewButton);
-
-        containerElement.appendChild(fileDiv);
+      if (isOpen && !isLoaded) {
+        folderContent.innerHTML = `<div class="loading">Loading contents...</div>`;
+        await loadFolder(item.path, folderContent);
+        isLoaded = true;
       }
-    }
+    });
+
+    containerElement.appendChild(folderHeader);
+    containerElement.appendChild(folderContent);
+
+   } else {
+    // Files: Create container div and make the WHOLE div clickable
+    const fileItem = document.createElement("div");
+    fileItem.className = "file-item";
+    fileItem.innerHTML = `
+      <span style="margin-right: 8px;">📄</span>
+      <span style="color: var(--accent-cyan, #00d4ff); font-weight: 500;">${item.name}</span>
+    `;
+
+    // Attach PDF click event to the outer container
+    fileItem.addEventListener("click", () => {
+      openPdfPreview(item);
+    });
+
+    containerElement.appendChild(fileItem);
+   }
+  }
   } catch (error) {
     containerElement.innerHTML = `<div class="loading" style="color: #ff6b6b;">Failed to fetch contents.</div>`;
   }
