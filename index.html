@@ -105,7 +105,7 @@
     color: #ffffff;
     text-decoration: underline;
   }
-  
+
 /* ==========================================
      FOLDERS & FILES (GLASSMORPHISM)
      ========================================== */
@@ -783,7 +783,7 @@ async function loadFolder(path, containerElement) {
   } else {
     // Whole file card click listener
     const fileItem = document.createElement("div");
-    fileItem.className = "file-item";
+    fileItem.className = "file file-item";
     fileItem.innerHTML = `
       <span style="margin-right: 8px;">📄</span>
       <span style="color: var(--accent-cyan, #00d4ff); font-weight: 500;">${item.name}</span>
