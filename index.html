@@ -506,8 +506,13 @@
     </div>
     <div class="stat-divider"></div>
     <div class="stat-item">
-      <span id="stat-folders" class="stat-number">0</span>
-      <span class="stat-label">Folders</span>
+      <span id="stat-subjects" class="stat-number">9</span>
+      <span class="stat-label">Subjects</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span id="stat-weight" class="stat-number">0 MB</span>
+      <span class="stat-label">Resource Weight</span>
     </div>
   </div>
 
@@ -610,12 +615,44 @@
       });
 
       // Update counters safely
-      const totalPdfsEl = document.getElementById('total-pdfs') || document.getElementById('stat-files');
-      const totalFoldersEl = document.getElementById('total-folders') || document.getElementById('stat-folders');
+      // Update counters safely
+      const totalPdfsEl = document.getElementById('stat-files');
+      const totalSubjectsEl = document.getElementById('stat-subjects');
+      const totalWeightEl = document.getElementById('stat-weight');
 
       if (totalPdfsEl) totalPdfsEl.textContent = globalSitemapFiles.length;
-      if (totalFoldersEl) totalFoldersEl.textContent = folderPaths.size;
+      if (totalSubjectsEl) totalSubjectsEl.textContent = "9"; // Core ICSE Class 10 subjects
 
+      // Dynamic Resource Weight estimation (~2.2 MB average per PDF note/paper) kept strictly in MB
+      // Calculate exact resource weight by fetching headers asynchronously in batches
+      if (totalWeightEl) {
+        totalWeightEl.textContent = "Calculating...";
+        
+        let totalBytes = 0;
+        let fetchedCount = 0;
+
+        // Fetch file sizes using HEAD requests to avoid downloading full files
+        const sizePromises = globalSitemapFiles.map(async (file) => {
+          try {
+            const res = await fetch(file.url, { method: 'HEAD' });
+            if (res.ok) {
+              const contentLength = res.headers.get('content-length');
+              if (contentLength) {
+                totalBytes += parseInt(contentLength, 10);
+              }
+            }
+          } catch (e) {
+            // Fallback gracefully if CORS/network blocks a specific HEAD request
+          }
+          fetchedCount++;
+          
+          // Update UI progressively as sizes resolve
+          const totalMb = totalBytes / (1024 * 1024);
+          totalWeightEl.textContent = `${Math.round(totalMb)} MB`;
+        });
+
+        await Promise.all(sizePromises);
+      }
     } catch (err) {
       console.warn('Could not load sitemap.xml for global stats/search:', err);
     }
