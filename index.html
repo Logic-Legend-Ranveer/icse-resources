@@ -493,15 +493,29 @@
 <script>
   let globalSitemapFiles = [];
 
-  // Synonym Dictionary for smart term mapping
+  // Synonym Dictionary for smart term mapping (Updated with CISCE Subject Codes)
   const SYNONYMS = {
+    // Document Types
     'pyq': ['pyq', 'pyqs', 'previous', 'past', 'pqp'],
     'previous': ['pyq', 'pyqs', 'previous', 'past'],
     'past': ['pyq', 'pyqs', 'previous', 'past'],
     'paper': ['paper', 'papers', 'question', 'qp'],
     'specimen': ['specimen', 'sample', 'model'],
     'formula': ['formula', 'formulas', 'formulae', 'sheet', 'key'],
-    'masterkey': ['masterkey', 'master', 'key', 'notes']
+    'masterkey': ['masterkey', 'master', 'key', 'notes'],
+    
+    // Subjects & ICSE Short Codes
+    'history': ['history', 'civics', 'hcg1', 'hcg-1'],
+    'civics': ['history', 'civics', 'hcg1', 'hcg-1'],
+    'geography': ['geography', 'geo', 'hcg2', 'hcg-2'],
+    'physics': ['physics', 'sci1', 'sci-1', 'science1'],
+    'chemistry': ['chemistry', 'sci2', 'sci-2', 'science2', 'chem'],
+    'biology': ['biology', 'sci3', 'sci-3', 'science3', 'bio'],
+    'maths': ['maths', 'math', 'mathematics', 'mat'],
+    'math': ['maths', 'math', 'mathematics', 'mat'],
+    'english': ['english', 'eng1', 'eng2', 'eng-1', 'eng-2', 'literature', 'language'],
+    'computer': ['computer', 'applications', 'cta', 'comp'],
+    'hindi': ['hindi', 'hin']
   };
 
   // Expand search queries based on synonyms
@@ -608,11 +622,16 @@
       return;
     }
 
+    // Render results making the ENTIRE row a clickable link
     searchResultsContainer.innerHTML = matches.map(file => `
-      <div class="file" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center;">
-        📄 <a href="${file.url}" target="_blank" rel="noopener" style="margin-left: 8px; color: var(--text-main); text-decoration: none;">${file.name}</a>
-        <span style="font-size: 12px; color: var(--text-secondary); margin-left: auto;">${file.path}</span>
-      </div>
+      <a href="${file.url}" target="_blank" rel="noopener" class="file-result-card" 
+         style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; text-decoration: none; cursor: pointer; transition: background 0.2s;">
+        <span style="margin-right: 12px; font-size: 1.2rem;">📄</span>
+        <span style="color: var(--accent-cyan, #00d4ff); font-weight: 500; font-size: 15px;">${file.name}</span>
+        <span style="font-size: 12px; color: rgba(255,255,255,0.5); margin-left: auto; text-align: right; max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${file.path}
+        </span>
+      </a>
     `).join('');
   }
 
