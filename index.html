@@ -322,41 +322,42 @@
       padding: 12px;
       font-size: 15px;
     }
+  /* Mobile: Fits within 100% width without breaking borders */
+  .stats-search-container {
+    width: 100%;
+    gap: 14px;
+    margin: 15px 0 25px 0;
+  }
 
-    /* Stats & Search Mobile Fix */
-    .stats-search-container {
-      width: 100%;
-      gap: 14px;
-      margin: 15px 0 25px 0;
-    }
+  .stats-bar {
+    display: flex; /* Switches to full width box only on small screens */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 8px;
+    gap: 4px;
+    justify-content: space-evenly;
+  }
 
-    .stats-bar {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px 6px;
-      gap: 4px;
-      justify-content: space-evenly;
-    }
+  .stat-item {
+    flex: 1;
+    min-width: 0; /* Prevents text overflow on thin phones */
+  }
 
-    .stat-item {
-      flex: 1;
-      min-width: 0; /* Prevents text from pushing past card borders */
-    }
+  .stat-number {
+    font-size: 16px;
+    line-height: 1.2;
+  }
 
-    .stat-number {
-      font-size: 16px;
-      line-height: 1.2;
-    }
+  .stat-label {
+    font-size: 8.5px;
+    letter-spacing: 0.02em;
+  }
 
-    .stat-label {
-      font-size: 8.5px;
-      letter-spacing: 0.02em;
-    }
+  .stat-divider {
+    height: 22px;
+    flex-shrink: 0;
+  }
 
-    .stat-divider {
-      height: 24px;
-      flex-shrink: 0;
-    }
 
     .download-actions {
       flex-direction: column;
