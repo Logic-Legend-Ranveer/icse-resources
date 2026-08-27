@@ -307,13 +307,26 @@
      MOBILE OVERRIDES (max-width: 700px)
      ========================================== */
   @media (max-width: 700px) {
-    
-    .stats-search-container {
-      align-items: stretch;  /* Allows elements to fill width nicely on phone */
-      gap: 16px;             /* Prevents stats bar and search bar from touching */
-      margin: 15px 0 25px 0;
+    body {
+      padding: 14px;
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0 0 14px;
+    }
+    .folder-header,
+    .file,
+    .download-all {
+      padding: 12px;
+      font-size: 15px;
     }
 
+    /* Mobile Stats & Search Layout */
+    .stats-search-container {
+      align-items: stretch;
+      gap: 16px;
+      margin: 15px 0 25px 0;
+    }
     .stats-bar {
       display: flex;
       width: 100%;
@@ -322,190 +335,106 @@
       padding: 12px 10px;
       justify-content: space-around;
     }
-
     .stat-item {
       flex: 1;
       text-align: center;
+      min-width: 0;
     }
-
     .stat-number {
-      font-size: 20px;       /* Scaled to prevent 2454 Mb from splitting into 2 lines */
-      white-space: nowrap;   /* Ensures number & unit stay strictly on 1 line */
+      font-size: 20px;
+      white-space: nowrap;
     }
-
     .stat-label {
       font-size: 9.5px;
       letter-spacing: 0.04em;
     }
-
     .stat-divider {
       height: 24px;
+      flex-shrink: 0;
     }
 
-    /* ... Keep existing body, h1, folder-header, and preview styles below ... */
-  
-
-    body {
-      padding: 14px;
-    }
-
-    h1 {
-      font-size: 24px;
-      margin: 0 0 14px;
-    }
-
-    .folder-header,
-    .file,
-    .download-all {
-      padding: 12px;
-      font-size: 15px;
-    }
+    /* Mobile Preview Buttons */
     .download-actions {
       flex-direction: column;
     }
-
     .download-all {
       flex: 1 1 auto;
       width: 100%;
     }
-
     .preview-toolbar {
       align-items: stretch;
       flex-wrap: wrap;
       gap: 8px;
       padding: 8px;
     }
-
     .preview-title {
       flex-basis: 100%;
       font-size: 14px;
       white-space: normal;
     }
-
     .preview-action {
       flex: 1;
       text-align: center;
       padding: 10px;
     }
-
     .preview-pages {
       padding: 6px;
     }
-
     .preview-pages canvas {
       margin-bottom: 10px;
     }
   }
-    body {
-      padding: 14px;
-    }
 
-    h1 {
-      font-size: 24px;
-      margin: 0 0 14px;
-    }
-
-    .folder-header,
-    .file,
-    .download-all {
-      padding: 12px;
-      font-size: 15px;
-    }
-
-    
-
-    .download-actions {
-      flex-direction: column;
-    }
-
-    .download-all {
-      flex: 1 1 auto;
-      width: 100%;
-    }
-
-    .preview-toolbar {
-      align-items: stretch;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 8px;
-    }
-
-    .preview-title {
-      flex-basis: 100%;
-      font-size: 14px;
-      white-space: normal;
-    }
-
-    .preview-action {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-    }
-
-    .preview-pages {
-      padding: 6px;
-    }
-
-    .preview-pages canvas {
-      margin-bottom: 10px;
-    }
-  }
   /* ==========================================
-     STATS COUNTER & SEARCH STYLES
+     DESKTOP STATS & SEARCH LAYOUT
      ========================================== */
-  /* ==========================================
-   DESKTOP STATS & SEARCH LAYOUT
-   ========================================== */
-.stats-search-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;    /* Centers stats bar & search input on desktop */
-  gap: 16px;              /* Gives breathing room between stats bar & search bar */
-  margin: 25px 0 35px 0;
-  width: 100%;
-}
+  .stats-search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin: 25px 0 35px 0;
+    width: 100%;
+  }
 
-.stats-bar {
-  display: inline-flex;   /* Wraps neatly around contents on desktop */
-  align-items: center;
-  justify-content: center;
-  gap: 32px;              /* Desktop gap between stat items */
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 14px 32px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
+  .stats-bar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 14px 32px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
 
-.stat-item {
-  text-align: center;
-}
+  .stat-item {
+    text-align: center;
+  }
 
-.stat-number {
-  display: block;
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--accent-gold);
-  line-height: 1.1;
-}
+  .stat-number {
+    display: block;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    line-height: 1.1;
+  }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 
-.stat-divider {
-  width: 1px;
-  height: 32px;
-  background: var(--glass-border);
-}
-
-
-
+  .stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--glass-border);
+  }
   .search-box {
     width: 100%;
     max-width: 520px;
