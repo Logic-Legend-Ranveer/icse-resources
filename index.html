@@ -105,22 +105,20 @@
     color: #ffffff;
     text-decoration: underline;
   }
-
-  /* ==========================================
+  
+/* ==========================================
      FOLDERS & FILES (GLASSMORPHISM)
      ========================================== */
-     /* Container for all folders */
-     /* Container forces a multi-column card grid */
-/* ==========================================
-     FOLDERS (PREMIUM VERTICAL LIST)
-     ========================================== */
+  
+  /* Root Container for Top-Level Folders */
   #files-container {
     display: flex !important;
     flex-direction: column;
-    gap: 14px; /* Creates clean spacing between folder cards */
+    gap: 14px; /* Creates clean spacing between top-level folder cards */
     margin-top: 20px;
   }
 
+  /* Main Folder Header Cards */
   .folder-header {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -143,48 +141,52 @@
   .folder-header:hover {
     background: var(--glass-bg-hover);
     border-color: rgba(255, 215, 0, 0.4);
-    /* Slides right slightly instead of up, perfect for vertical lists */
     transform: translateX(6px); 
     box-shadow: -4px 4px 15px rgba(0, 0, 0, 0.3);
   }
 
+  /* Inner Folder Container (Holds nested subfolders & files) */
   .folder-content {
-    /* Anchors the files visually to the folder they belong to */
-    margin-left: 24px; 
-    margin-top: -4px; 
-    margin-bottom: 8px;
+    margin-left: 20px; 
+    margin-top: 10px; 
+    margin-bottom: 14px;
     border-left: 2px solid rgba(255, 215, 0, 0.3);
     padding-left: 16px;
     display: none;
+    flex-direction: column;
+    gap: 10px; /* FIXED: Enforces consistent gap between subfolders and files */
   }
 
   .folder-content.open {
-    display: block;
+    display: flex !important; /* FIXED: Changed from 'block' to 'flex' so gap works */
     animation: fadeIn 0.3s ease-in-out;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
+    from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* PDF File Cards */
   .file {
     background: var(--glass-bg);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border: 1px solid var(--glass-border);
-    padding: 10px 14px;
-    margin: 6px 0;
+    padding: 12px 16px;
     border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: border-color 0.2s ease, background 0.2s ease;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
   }
 
   .file:hover {
     background: var(--glass-bg-hover);
     border-color: var(--glass-border-hover);
+    transform: translateX(4px);
   }
 
   .loading {
@@ -192,7 +194,6 @@
     font-style: italic;
     padding: 6px 14px;
   }
-
   /* ==========================================
      BUTTONS & ACTIONS
      ========================================== */
