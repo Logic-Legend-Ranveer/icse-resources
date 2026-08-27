@@ -623,15 +623,16 @@
     }
 
     // Render results making the ENTIRE row a clickable link
+    // Render results as clickable divs that trigger your custom preview function
     searchResultsContainer.innerHTML = matches.map(file => `
-      <a href="${file.url}" target="_blank" rel="noopener" class="file-result-card" 
-         style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; text-decoration: none; cursor: pointer; transition: background 0.2s;">
+      <div onclick="openPdfPreview('${file.url}')" class="file-result-card" 
+         style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; cursor: pointer; transition: background 0.2s;">
         <span style="margin-right: 12px; font-size: 1.2rem;">📄</span>
         <span style="color: var(--accent-cyan, #00d4ff); font-weight: 500; font-size: 15px;">${file.name}</span>
         <span style="font-size: 12px; color: rgba(255,255,255,0.5); margin-left: auto; text-align: right; max-width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
           ${file.path}
         </span>
-      </a>
+      </div>
     `).join('');
   }
 
