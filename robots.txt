@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://logic-legend-ranveer.github.io/icse-resources/sitemap.xml
