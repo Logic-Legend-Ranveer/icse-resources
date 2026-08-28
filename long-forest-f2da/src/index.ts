@@ -17,10 +17,26 @@ export default {
 
     const username = "Logic-Legend-Ranveer";
     const repo = "icse-resources";
+    const branch = "main";
 
-    // 1. If path is empty (root URL), fetch and serve your index.html from GitHub
+    // Common MIME types for raw file requests
+    const mimeTypes: Record<string, string> = {
+      xml: "application/xml; charset=UTF-8",
+      html: "text/html; charset=UTF-8",
+      txt: "text/plain; charset=UTF-8",
+      json: "application/json; charset=UTF-8",
+      css: "text/css; charset=UTF-8",
+      js: "application/javascript; charset=UTF-8",
+      pdf: "application/pdf",
+      png: "image/png",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      svg: "image/svg+xml",
+    };
+
+    // 1. Root URL -> Fetch index.html
     if (!path || path === "") {
-      const htmlUrl = `https://raw.githubusercontent.com/${username}/${repo}/main/index.html`;
+      const htmlUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/index.html`;
       const htmlResponse = await fetch(htmlUrl, {
         headers: {
           "User-Agent": "Cloudflare-Worker-Proxy",
@@ -31,15 +47,38 @@ export default {
       return new Response(htmlResponse.body, {
         status: htmlResponse.status,
         headers: {
-          "Content-Type": "text/html;charset=UTF-8",
+          "Content-Type": "text/html; charset=UTF-8",
           "Access-Control-Allow-Origin": "*"
         }
       });
     }
 
-    // 2. Otherwise, proxy folder/file content requests to the GitHub API safely
-    const githubApiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
+    // Extract file extension if present
+    const extMatch = path.match(/\.([a-z0-9]+)$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase() : null;
 
+    // 2. Direct File Requests (e.g., sitemap.xml, robots.txt, images, PDFs)
+    if (ext && mimeTypes[ext]) {
+      const rawFileUrl = `https://raw.githubusercontent.com/${username}/${repo}/${branch}/${path}`;
+      const fileResponse = await fetch(rawFileUrl, {
+        headers: {
+          "User-Agent": "Cloudflare-Worker-Proxy",
+          "Authorization": `token ${env.GITHUB_TOKEN}`
+        }
+      });
+
+      return new Response(fileResponse.body, {
+        status: fileResponse.status,
+        headers: {
+          "Content-Type": mimeTypes[ext],
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=3600"
+        }
+      });
+    }
+
+    // 3. Folder/Directory Listings -> GitHub API JSON
+    const githubApiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${path}`;
     const githubResponse = await fetch(githubApiUrl, {
       headers: {
         "User-Agent": "Cloudflare-Worker-Proxy",
