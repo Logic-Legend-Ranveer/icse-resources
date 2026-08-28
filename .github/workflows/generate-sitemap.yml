@@ -25,14 +25,15 @@ jobs:
       - name: URL-Encode Sitemap URLs
         run: |
           python3 -c "
-          import re, urllib.parse
+          import re, urllib.parse, html
           with open('sitemap.xml', 'r', encoding='utf-8') as f:
               content = f.read()
           def fix_loc(match):
               url = match.group(1)
-              # Encodes spaces to %20 while preserving valid URL structure characters
-              encoded_url = urllib.parse.quote(url, safe=':/?&=#%')
-              return f'<loc>{encoded_url}</loc>'
+              raw_url = html.unescape(url)
+              encoded_url = urllib.parse.quote(raw_url, safe=':/?&=#%')
+              xml_safe_url = encoded_url.replace('&', '&amp;')
+              return f'<loc>{xml_safe_url}</loc>'
           updated = re.sub(r'<loc>(.*?)</loc>', fix_loc, content)
           with open('sitemap.xml', 'w', encoding='utf-8') as f:
               f.write(updated)
