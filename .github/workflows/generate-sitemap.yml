@@ -22,6 +22,22 @@ jobs:
           include-pdf: true
           sitemap-format: xml
 
+      - name: URL-Encode Sitemap URLs
+        run: |
+          python3 -c "
+          import re, urllib.parse
+          with open('sitemap.xml', 'r', encoding='utf-8') as f:
+              content = f.read()
+          def fix_loc(match):
+              url = match.group(1)
+              # Encodes spaces to %20 while preserving valid URL structure characters
+              encoded_url = urllib.parse.quote(url, safe=':/?&=#%')
+              return f'<loc>{encoded_url}</loc>'
+          updated = re.sub(r'<loc>(.*?)</loc>', fix_loc, content)
+          with open('sitemap.xml', 'w', encoding='utf-8') as f:
+              f.write(updated)
+          "
+
       - name: Commit and Push Sitemap
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
