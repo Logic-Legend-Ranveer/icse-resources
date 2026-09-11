@@ -1,0 +1,2 @@
+When user tries to copy Text from pdfs, even though it looks like it, they actually do not get the copied text to their clipboard.
+Users need topicwise assessment of their performance in quizzes with pie chart showing strengths and weaknesses topicwise.
